@@ -72,8 +72,77 @@
  *   isLassiStand({});                       // => false
  */
 export function LassiStand(name, city) {
-  // Your code here
+
+       this.name = name;
+       this.city = city;
+       this.menu = [];
+       this.orders = [];
+       this._nextOrderId = 1
+        
 }
+
+      LassiStand.prototype.addFlavor = function (flavor, price) {
+          
+        if(this.menu.some(e => e.flavor === flavor))
+            return -1
+
+        if(price <=0)
+            return -1
+
+          this.menu.push({flavor, price});
+          return this.menu.length;
+       };     
+
+     LassiStand.prototype.takeOrder = function (customerName, flavor, quantity) {
+        
+      if((!this.menu.some(e => e.flavor === flavor)) || quantity <= 0)
+        return -1;
+
+      const obj = this.menu.find(item => item.flavor === flavor);
+
+      const price = obj.price;
+       const id = this._nextOrderId++;
+
+      this.orders.push({ id:id, customer: customerName,
+     flavor, quantity, total: (price * quantity), status: "pending" })
+
+     return id;
+
+     };
+     
+
+     LassiStand.prototype.completeOrder = function (orderId){
+
+         const obj = this.orders.find(item => item.id === orderId);
+         
+         if(obj === undefined) return false;
+         if(obj.status === "completed") return false;
+
+         obj.status = "completed";
+         return true;
+
+     };
+
+       LassiStand.prototype.getRevenue = function (){
+        
+        const completedOrders = this.orders.filter(item => item.status === "completed");
+
+        return completedOrders.reduce((acc, item) => {
+             return acc += item.total
+        },0)
+
+       };
+
+       LassiStand.prototype.getMenu = function(){
+          
+          const menuCopy = [...this.menu];
+
+          return menuCopy;
+       }
+
+       
+       
+      
 
 // Add prototype methods here:
 // LassiStand.prototype.addFlavor = function(flavor, price) { ... }
@@ -82,6 +151,13 @@ export function LassiStand(name, city) {
 // LassiStand.prototype.getRevenue = function() { ... }
 // LassiStand.prototype.getMenu = function() { ... }
 
+
+//  * Function: isLassiStand(obj)
+//  *   - Returns true if obj is an instance of LassiStand (use instanceof)
+//  *   - Returns false otherwise
+
 export function isLassiStand(obj) {
   // Your code here
+    
+   return obj instanceof LassiStand;
 }

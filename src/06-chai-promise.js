@@ -74,16 +74,84 @@
  */
 export function orderChai(type, quantity) {
   // Your code here
+
+  const prices = { cutting: 10, special: 20, ginger: 15, masala: 25 };
+
+  if(!(type in prices))
+    return Promise.reject( new Error("Yeh chai available nahi hai!"));
+
+  if(typeof(quantity) !== "number" || quantity <= 0)
+    return Promise.reject(new Error("Kitni chai chahiye bhai?"));
+
+    return new Promise((resolve,reject) => {
+      setTimeout(()=>{
+        resolve({
+          type,
+          quantity,
+          total: prices[type] * quantity
+        });
+      },100);
+       
+    });
 }
 
 export function checkIngredients(ingredient) {
   // Your code here
+  const validIngredients = ["tea", "milk", "sugar", "ginger", "cardamom"];
+
+  if(!validIngredients.includes(ingredient))
+    return Promise.reject(new Error(`${ingredient} khatam ho gaya!`))
+
+  return new Promise((resolve,reject)=>{setTimeout(()=>{
+    resolve({
+      ingredient,
+      available: true,
+    });
+    
+  },100);
+  });
 }
 
 export function prepareChaiWithTimeout(type, timeoutMs) {
   // Your code here
+  const chaiPrep = orderChai(type,1);
+  const timeOut = new Promise((resolve,reject) => {setTimeout(() => {
+
+    reject(new Error("Bahut der ho gayi, chai nahi bani!"))
+    
+  }, timeoutMs);}) 
+
+  return Promise.race([chaiPrep, timeOut]);
 }
 
 export function processChaiQueue(orders) {
   // Your code here
+    return new Promise((resolve) => {
+    if (!Array.isArray(orders) || orders.length === 0) {
+      return resolve([]);
+    }
+
+    const promises = orders.map(order =>
+      orderChai(order.type, order.quantity)
+    );
+
+    Promise.allSettled(promises).then(results => {
+      const formatted = results.map(res => {
+        if (res.status === "fulfilled") {
+          return {
+            status: "fulfilled",
+            value: res.value
+          };
+        } else {
+          return {
+            status: "rejected",
+            reason: res.reason.message
+          };
+        }
+      });
+
+      resolve(formatted);
+    });
+  });
+
 }
